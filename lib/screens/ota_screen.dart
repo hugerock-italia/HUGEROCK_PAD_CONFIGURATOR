@@ -7,6 +7,7 @@ import '../models/enums.dart';
 
 const String _githubOwner = 'hugerock-italia';
 const String _githubRepo  = 'kat1-firmware';
+// ignore: unused_element
 const int    _chunkSize   = 512;
 const int    _chunkDelay  = 30;
 

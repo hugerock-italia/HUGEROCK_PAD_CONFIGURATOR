@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+// ignore: unused_import
 import 'config/colors.dart';
 import 'config/app_theme.dart';
 
