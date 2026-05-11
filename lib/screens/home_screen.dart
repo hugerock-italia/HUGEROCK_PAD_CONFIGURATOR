@@ -8,6 +8,8 @@ import '../services/ble_manager.dart';
 import 'config_screen.dart';
 import 'ota_screen.dart';
 import 'auto_config_screen.dart';
+import '../services/update_checker.dart';
+import '../widgets/update_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -28,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     bleManager.addListener(
         () => setState(() => connectedDevice = bleManager.connectedDevice));
     _loadAppVersion();
+    _checkForUpdates();
     _requestBlePermissions();
   }
 
@@ -42,6 +45,17 @@ class _HomeScreenState extends State<HomeScreen> {
     final info = await PackageInfo.fromPlatform();
     if (mounted) {
       setState(() => _appVersion = 'v${info.version}+${info.buildNumber}');
+    }
+  }
+
+  /// Checks GitHub releases.json for a newer app version.
+  /// If an update is available, shows [showUpdateDialog] via a post-frame callback.
+  Future<void> _checkForUpdates() async {
+    final info = await UpdateChecker.checkForUpdate();
+    if (info != null && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) showUpdateDialog(context, info);
+      });
     }
   }
 
