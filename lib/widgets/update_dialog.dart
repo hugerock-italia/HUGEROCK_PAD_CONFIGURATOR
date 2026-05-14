@@ -4,22 +4,22 @@ import '../services/update_checker.dart';
 
 /// Shows a non-blocking dialog informing the user about an available update.
 ///
-/// Tapping "Aggiorna ora" opens [UpdateInfo.apkUrl] in the external browser.
-/// Tapping "Più tardi" dismisses the dialog without any action.
+/// Tapping "Update now" opens [UpdateInfo.apkUrl] in the external browser.
+/// Tapping "Later" dismisses the dialog without any action.
 Future<void> showUpdateDialog(BuildContext context, UpdateInfo info) async {
   return showDialog<void>(
     context: context,
     barrierDismissible: true,
     builder: (BuildContext ctx) {
       return AlertDialog(
-        title: const Text('Aggiornamento disponibile'),
+        title: const Text('Update available'),
         content: Text(
-          'Versione ${info.version} disponibile.\n\n${info.releaseNotes}',
+          'Version ${info.version} is available.\n\n${info.releaseNotes}',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Più tardi'),
+            child: const Text('Later'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -29,7 +29,7 @@ Future<void> showUpdateDialog(BuildContext context, UpdateInfo info) async {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
               }
             },
-            child: const Text('Aggiorna ora'),
+            child: const Text('Update now'),
           ),
         ],
       );
