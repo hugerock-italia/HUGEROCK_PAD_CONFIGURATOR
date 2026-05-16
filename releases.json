@@ -1,6 +1,6 @@
 {
-  "version": "2.0.1",
-  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v2.0.1/app-release.apk",
-  "releaseNotes": "Added DMD2 GPS profile: a new button mapping preset for DMD2 in GPS mode, mirroring the existing Whip Live GPS layout\nFixed update checker: added missing INTERNET permission that prevented the app from detecting available updates",
+  "version": "2.0.2",
+  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v2.0.2/app-release.apk",
+  "releaseNotes": "Added author signature \"designed by kat-adv\" below the version label in the home screen",
   "date": "2026-05-16"
 }
