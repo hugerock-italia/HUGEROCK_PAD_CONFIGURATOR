@@ -302,6 +302,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                   textAlign: TextAlign.center,
                 ),
+              Text(
+                'designed by kat-adv',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.sandGrey,
+                    ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 8),
             ],
           ),
