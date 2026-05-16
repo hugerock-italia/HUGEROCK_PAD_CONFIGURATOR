@@ -39,8 +39,38 @@ const osmandProfile = AppProfile(
   description: 'Zoom VOL+/VOL-, center map, orientation',
   icon: Icons.map,
   recommendedMapId: 0,
-  assignments: [0x25,0x25,0x24,0x24,0x06,0x07,0x09,0x2C,0x52,0x51,0x50,0x4F,0x06,0x00],
-  repeatFlags: [true,true,true,true,false,false,false,false,false,false,false,false,false,false],
+  assignments: [
+    0x25,
+    0x25,
+    0x24,
+    0x24,
+    0x06,
+    0x07,
+    0x09,
+    0x2C,
+    0x52,
+    0x51,
+    0x50,
+    0x4F,
+    0x06,
+    0x00
+  ],
+  repeatFlags: [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
 );
 
 const whipProfile = AppProfile(
@@ -50,8 +80,79 @@ const whipProfile = AppProfile(
   description: 'Zoom +/-, center map, orientation',
   icon: Icons.navigation,
   recommendedMapId: 0,
-  assignments: [0x38,0x38,0x39,0x39,0x06,0x07,0x09,0x2C,0x52,0x51,0x50,0x4F,0x06,0x00],
-  repeatFlags: [true,true,true,true,false,false,false,false,false,false,false,false,false,false],
+  assignments: [
+    0x38,
+    0x38,
+    0x39,
+    0x39,
+    0x06,
+    0x07,
+    0x09,
+    0x2C,
+    0x52,
+    0x51,
+    0x50,
+    0x4F,
+    0x06,
+    0x00
+  ],
+  repeatFlags: [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+);
+
+const dmd2Profile = AppProfile(
+  id: 'dmd2',
+  name: 'DMD2',
+  category: 'GPS',
+  description: 'Zoom +/-, center map, orientation',
+  icon: Icons.navigation,
+  recommendedMapId: 0,
+  assignments: [
+    0x38,
+    0x38,
+    0x39,
+    0x39,
+    0x06,
+    0x07,
+    0x09,
+    0x2C,
+    0x52,
+    0x51,
+    0x50,
+    0x4F,
+    0x06,
+    0x00
+  ],
+  repeatFlags: [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
 );
 
 const locusMapProfile = AppProfile(
@@ -61,8 +162,38 @@ const locusMapProfile = AppProfile(
   description: 'Zoom +/-, center, pan with joystick',
   icon: Icons.explore,
   recommendedMapId: 0,
-  assignments: [0x38,0x38,0x39,0x39,0x06,0x07,0x09,0x2C,0x52,0x51,0x50,0x4F,0x06,0x00],
-  repeatFlags: [true,true,true,true,false,false,false,false,false,false,false,false,false,false],
+  assignments: [
+    0x38,
+    0x38,
+    0x39,
+    0x39,
+    0x06,
+    0x07,
+    0x09,
+    0x2C,
+    0x52,
+    0x51,
+    0x50,
+    0x4F,
+    0x06,
+    0x00
+  ],
+  repeatFlags: [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
 );
 
 // ==================== ROADBOOK ====================
@@ -75,22 +206,37 @@ const terraPirataProfile = AppProfile(
   icon: Icons.menu_book,
   recommendedMapId: 1,
   assignments: [
-    0x4F,  // btn1: →
-    0x4F,  // btn1L: →
-    0x50,  // btn2: ←
-    0x50,  // btn2L: ←
-    0x1D,  // btn3: Z
-    0x15,  // btn3L: R
-    0x51,  // btn4: ↓
-    0x2C,  // btn4L: ALT+TAB
-    0x52,  // up: ↑
-    0x51,  // down: ↓
-    0x26,  // left: NEXT
-    0x27,  // right: PREV
-    0x10,  // ext: M
-    0x0A  // wheel: G
+    0x4F, // btn1: →
+    0x4F, // btn1L: →
+    0x50, // btn2: ←
+    0x50, // btn2L: ←
+    0x1D, // btn3: Z
+    0x15, // btn3L: R
+    0x51, // btn4: ↓
+    0x2C, // btn4L: ALT+TAB
+    0x52, // up: ↑
+    0x51, // down: ↓
+    0x26, // left: NEXT
+    0x27, // right: PREV
+    0x10, // ext: M
+    0x0A // wheel: G
   ],
-  repeatFlags: [true,false,true,false,false,false,false,false,false,false,false,false,false,false],
+  repeatFlags: [
+    true,
+    false,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
 );
 
 const mrbProfile = AppProfile(
@@ -101,22 +247,37 @@ const mrbProfile = AppProfile(
   icon: Icons.book,
   recommendedMapId: 2,
   assignments: [
-    0x52,  // btn1: ↑
-    0x52,  // btn1L: ↑
-    0x51,  // btn2: ↓
-    0x51,  // btn2L: ↓
-    0x52,  // btn3: ↑
-    0x07,  // btn3L: D
-    0x51,  // btn4: ↓
-    0x1D,  // btn4L: Z
-    0x24,  // up: VOL-
-    0x25,  // down: VOL+
-    0x25,  // left: VOL+
-    0x24,  // right: VOL-
-    0x17,  // ext: T
-    0x17  // wheel: T
+    0x52, // btn1: ↑
+    0x52, // btn1L: ↑
+    0x51, // btn2: ↓
+    0x51, // btn2L: ↓
+    0x52, // btn3: ↑
+    0x07, // btn3L: D
+    0x51, // btn4: ↓
+    0x1D, // btn4L: Z
+    0x24, // up: VOL-
+    0x25, // down: VOL+
+    0x25, // left: VOL+
+    0x24, // right: VOL-
+    0x17, // ext: T
+    0x17 // wheel: T
   ],
-  repeatFlags: [true,true,true,true,false,false,false,false,false,false,false,false,false,false],
+  repeatFlags: [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
 );
 
 const roadbookReaderProfile = AppProfile(
@@ -126,8 +287,38 @@ const roadbookReaderProfile = AppProfile(
   description: 'Digital scroll, trip +/-',
   icon: Icons.article,
   recommendedMapId: 0,
-  assignments: [0x4B,0x4B,0x4E,0x4E,0x25,0x25,0x24,0x24,0x4B,0x4E,0x50,0x4F,0x28,0x00],
-  repeatFlags: [true,true,false,false,true,true,false,false,false,false,false,false,false,false],
+  assignments: [
+    0x4B,
+    0x4B,
+    0x4E,
+    0x4E,
+    0x25,
+    0x25,
+    0x24,
+    0x24,
+    0x4B,
+    0x4E,
+    0x50,
+    0x4F,
+    0x28,
+    0x00
+  ],
+  repeatFlags: [
+    true,
+    true,
+    false,
+    false,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
 );
 
 // ==================== MULTIMEDIA ====================
@@ -139,8 +330,38 @@ const youtubeProfile = AppProfile(
   description: 'Vol +/-, play/pause, mute, track forward/back',
   icon: Icons.play_circle_fill,
   recommendedMapId: 1,
-  assignments: [0x25,0x25,0x24,0x24,0x2D,0x2D,0x2E,0x2E,0x26,0x27,0x26,0x27,0x2D,0x00],
-  repeatFlags: [true,true,true,true,false,false,false,false,false,false,false,false,false,false],
+  assignments: [
+    0x25,
+    0x25,
+    0x24,
+    0x24,
+    0x2D,
+    0x2D,
+    0x2E,
+    0x2E,
+    0x26,
+    0x27,
+    0x26,
+    0x27,
+    0x2D,
+    0x00
+  ],
+  repeatFlags: [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
 );
 
 // ==================== REGISTRY ====================
@@ -148,6 +369,7 @@ const youtubeProfile = AppProfile(
 const List<AppProfile> allProfiles = [
   osmandProfile,
   whipProfile,
+  dmd2Profile,
   locusMapProfile,
   terraPirataProfile,
   mrbProfile,
