@@ -210,6 +210,44 @@ class BLEManager extends ChangeNotifier {
     );
   }
 
+  // ==================== MAP COLORS ====================
+
+  /// Sends CONFIG:MAP_COLOR command to set LED color for map index (1-based).
+  Future<void> sendMapColor(int mapIndex, int r, int g, int b) async {
+    if (_configCharacteristic == null) throw Exception('Not connected');
+    final cmd = 'CONFIG:MAP_COLOR:$mapIndex:$r:$g:$b';
+    await _configCharacteristic!.write(cmd.codeUnits, withoutResponse: false);
+  }
+
+  /// Requests current map colors from device via BLE notification.
+  Future<void> sendGetColors() async {
+    if (_configCharacteristic == null) throw Exception('Not connected');
+    await _configCharacteristic!
+        .write('CONFIG:GET_COLORS'.codeUnits, withoutResponse: false);
+  }
+
+  /// Notification stream on config characteristic.
+  Stream<List<int>>? get configNotifications =>
+      _configCharacteristic?.onValueReceived;
+
+  /// Subscribes to config characteristic notifications.
+  Future<bool> subscribeConfigNotifications() async {
+    if (_configCharacteristic == null) return false;
+    try {
+      await _configCharacteristic!.setNotifyValue(true);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Unsubscribes from config characteristic notifications.
+  Future<void> unsubscribeConfigNotifications() async {
+    try {
+      await _configCharacteristic?.setNotifyValue(false);
+    } catch (_) {}
+  }
+
   // ==================== OTA ====================
 
   Future<void> startOta(int fileSize) async {
