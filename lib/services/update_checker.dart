@@ -47,8 +47,12 @@ class UpdateChecker {
       final r = remote.split('.').map(int.parse).toList();
       final c = current.split('.').map(int.parse).toList();
       // Pad shorter list with zeros
-      while (r.length < 3) { r.add(0); }
-      while (c.length < 3) { c.add(0); }
+      while (r.length < 3) {
+        r.add(0);
+      }
+      while (c.length < 3) {
+        c.add(0);
+      }
       for (int i = 0; i < 3; i++) {
         if (r[i] > c[i]) return true;
         if (r[i] < c[i]) return false;
@@ -71,8 +75,7 @@ class UpdateChecker {
           .timeout(const Duration(seconds: 5));
 
       if (response.statusCode != 200) {
-        debugPrint(
-            'UpdateChecker: unexpected status ${response.statusCode}');
+        debugPrint('UpdateChecker: unexpected status ${response.statusCode}');
         return null;
       }
 

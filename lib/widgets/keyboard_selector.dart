@@ -180,8 +180,8 @@ class _KeyboardSelectorState extends State<KeyboardSelector>
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          _buildKeyRow(['ENTER', 'TAB', 'ESC', 'SPACE'],
-              [0x28, 0x2B, 0x29, 0x2C]),
+          _buildKeyRow(
+              ['ENTER', 'TAB', 'ESC', 'SPACE'], [0x28, 0x2B, 0x29, 0x2C]),
           const SizedBox(height: 8),
           _buildKeyRow(['BACK', 'DEL'], [0x2A, 0x4E]),
           const SizedBox(height: 16),

@@ -303,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   textAlign: TextAlign.center,
                 ),
               Text(
-                'designed by HUGEROCK-ITALIA',
+                'designed by HUGEROCK-ITALY',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.sandGrey,
                     ),

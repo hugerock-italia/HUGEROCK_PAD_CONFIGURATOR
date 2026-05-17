@@ -4,9 +4,9 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import '../models/enums.dart';
 
 class BLEManager extends ChangeNotifier {
-  static const String SERVICE_UUID     = '12345678-1234-1234-1234-123456789012';
+  static const String SERVICE_UUID = '12345678-1234-1234-1234-123456789012';
   static const String CONFIG_CHAR_UUID = '87654321-4321-4321-4321-210987654321';
-  static const String OTA_CHAR_UUID    = '87654321-4321-4321-4321-210987654323';
+  static const String OTA_CHAR_UUID = '87654321-4321-4321-4321-210987654323';
 
   BluetoothDevice? _connectedDevice;
   BluetoothCharacteristic? _configCharacteristic;
@@ -16,11 +16,11 @@ class BLEManager extends ChangeNotifier {
   int _mtu = 512;
 
   BluetoothDevice? get connectedDevice => _connectedDevice;
-  DeviceType?      get deviceType      => _deviceType;
-  bool             get isConnected     => _connectedDevice != null;
-  bool             get isScanning      => _isScanning;
-  int              get mtu             => _mtu;
-  int              get otaChunkSize    => (_mtu - 3).clamp(20, 512);
+  DeviceType? get deviceType => _deviceType;
+  bool get isConnected => _connectedDevice != null;
+  bool get isScanning => _isScanning;
+  int get mtu => _mtu;
+  int get otaChunkSize => (_mtu - 3).clamp(20, 512);
 
   BLEManager() {
     FlutterBluePlus.adapterState.listen((state) {
@@ -29,7 +29,8 @@ class BLEManager extends ChangeNotifier {
   }
 
   bool _isTargetDevice(BluetoothDevice device) {
-    final name = device.localName.isNotEmpty ? device.localName : device.platformName;
+    final name =
+        device.localName.isNotEmpty ? device.localName : device.platformName;
     return DeviceType.fromDeviceName(name) != null;
   }
 
@@ -44,7 +45,8 @@ class BLEManager extends ChangeNotifier {
       }
 
       final bonded = await FlutterBluePlus.bondedDevices;
-      debugPrint('[BLE] Bonded devices: ${bonded.map((d) => d.platformName).toList()}');
+      debugPrint(
+          '[BLE] Bonded devices: ${bonded.map((d) => d.platformName).toList()}');
 
       for (final device in bonded) {
         if (_isTargetDevice(device)) {
@@ -67,7 +69,8 @@ class BLEManager extends ChangeNotifier {
       bool found = false;
       await for (var results in FlutterBluePlus.scanResults) {
         for (var r in results) {
-          debugPrint('[BLE] Scan found: ${r.device.platformName} / ${r.device.localName}');
+          debugPrint(
+              '[BLE] Scan found: ${r.device.platformName} / ${r.device.localName}');
           if (_isTargetDevice(r.device)) {
             await FlutterBluePlus.stopScan();
             await _connectToDevice(r.device);
@@ -90,12 +93,15 @@ class BLEManager extends ChangeNotifier {
     }
   }
 
-  Future<void> _connectToDevice(BluetoothDevice device, {int attempt = 1}) async {
+  Future<void> _connectToDevice(BluetoothDevice device,
+      {int attempt = 1}) async {
     try {
       // Disconnect any stale connection before attempting
       if (device.isConnected) {
         debugPrint('[BLE] Device already connected, disconnecting first...');
-        try { await device.disconnect(); } catch (_) {}
+        try {
+          await device.disconnect();
+        } catch (_) {}
         await Future.delayed(const Duration(milliseconds: 500));
       }
 
@@ -113,19 +119,23 @@ class BLEManager extends ChangeNotifier {
         debugPrint('[BLE] MTU fallback: $_mtu');
       }
 
-      final name = device.localName.isNotEmpty ? device.localName : device.platformName;
+      final name =
+          device.localName.isNotEmpty ? device.localName : device.platformName;
       _deviceType = DeviceType.fromDeviceName(name);
       debugPrint('[BLE] DeviceType: $_deviceType');
 
       final services = await device.discoverServices();
-      debugPrint('[BLE] Services found: ${services.map((s) => s.uuid.str).toList()}');
+      debugPrint(
+          '[BLE] Services found: ${services.map((s) => s.uuid.str).toList()}');
 
       for (var service in services) {
         if (service.uuid.str.toLowerCase() == SERVICE_UUID.toLowerCase()) {
           for (var char in service.characteristics) {
             final uuid = char.uuid.str.toLowerCase();
-            if (uuid == CONFIG_CHAR_UUID.toLowerCase()) _configCharacteristic = char;
-            else if (uuid == OTA_CHAR_UUID.toLowerCase()) _otaCharacteristic = char;
+            if (uuid == CONFIG_CHAR_UUID.toLowerCase())
+              _configCharacteristic = char;
+            else if (uuid == OTA_CHAR_UUID.toLowerCase())
+              _otaCharacteristic = char;
           }
         }
       }
@@ -144,10 +154,13 @@ class BLEManager extends ChangeNotifier {
       debugPrint('[BLE] _connectToDevice error (attempt $attempt): $e');
 
       // GATT 133: stale Android BLE cache — retry once after cleanup
-      final isGatt133 = e.toString().contains('133') || e.toString().contains('GATT');
+      final isGatt133 =
+          e.toString().contains('133') || e.toString().contains('GATT');
       if (isGatt133 && attempt == 1) {
         debugPrint('[BLE] GATT 133 detected, retrying after cleanup...');
-        try { await device.disconnect(); } catch (_) {}
+        try {
+          await device.disconnect();
+        } catch (_) {}
         await Future.delayed(const Duration(seconds: 2));
         await _connectToDevice(device, attempt: 2);
         return;
@@ -163,25 +176,30 @@ class BLEManager extends ChangeNotifier {
     }
   }
 
-  Future<void> sendConfigCommand(int mapId, int keyIndex, int commandId, {bool repeat = false}) async {
+  Future<void> sendConfigCommand(int mapId, int keyIndex, int commandId,
+      {bool repeat = false}) async {
     if (_configCharacteristic == null) throw Exception('Not connected');
-    final cmd = 'CONFIG:$mapId:$keyIndex:${commandId.toRadixString(16).padLeft(2, '0').toUpperCase()}:${repeat ? 1 : 0}';
+    final cmd =
+        'CONFIG:$mapId:$keyIndex:${commandId.toRadixString(16).padLeft(2, '0').toUpperCase()}:${repeat ? 1 : 0}';
     await _configCharacteristic!.write(cmd.codeUnits, withoutResponse: false);
   }
 
   Future<void> sendConfigModeOn() async {
     if (_configCharacteristic == null) throw Exception('Not connected');
-    await _configCharacteristic!.write('CONFIG:MODE:ON'.codeUnits, withoutResponse: false);
+    await _configCharacteristic!
+        .write('CONFIG:MODE:ON'.codeUnits, withoutResponse: false);
   }
 
   Future<void> sendConfigModeOff() async {
     if (_configCharacteristic == null) throw Exception('Not connected');
-    await _configCharacteristic!.write('CONFIG:MODE:OFF'.codeUnits, withoutResponse: false);
+    await _configCharacteristic!
+        .write('CONFIG:MODE:OFF'.codeUnits, withoutResponse: false);
   }
 
   Future<void> sendResetCommand() async {
     if (_configCharacteristic == null) throw Exception('Not connected');
-    await _configCharacteristic!.write('RESET:CONFIG'.codeUnits, withoutResponse: false);
+    await _configCharacteristic!
+        .write('RESET:CONFIG'.codeUnits, withoutResponse: false);
   }
 
   Future<void> sendWheelEnable(int mapId, bool enabled) async {
@@ -196,21 +214,25 @@ class BLEManager extends ChangeNotifier {
 
   Future<void> startOta(int fileSize) async {
     if (_configCharacteristic == null) throw Exception('Not connected');
-    await _configCharacteristic!.write('CONFIG:OTA:BEGIN:$fileSize'.codeUnits, withoutResponse: false);
+    await _configCharacteristic!
+        .write('CONFIG:OTA:BEGIN:$fileSize'.codeUnits, withoutResponse: false);
     await Future.delayed(const Duration(milliseconds: 500));
   }
 
   Future<void> sendOtaChunk(Uint8List chunk) async {
-    if (_otaCharacteristic == null) throw Exception('OTA characteristic not available');
+    if (_otaCharacteristic == null)
+      throw Exception('OTA characteristic not available');
     await _otaCharacteristic!.write(chunk, withoutResponse: true);
   }
 
   Future<void> endOta() async {
     if (_configCharacteristic == null) throw Exception('Not connected');
-    await _configCharacteristic!.write('CONFIG:OTA:END'.codeUnits, withoutResponse: false);
+    await _configCharacteristic!
+        .write('CONFIG:OTA:END'.codeUnits, withoutResponse: false);
   }
 
-  Stream<List<int>>? get otaNotifications => _otaCharacteristic?.onValueReceived;
+  Stream<List<int>>? get otaNotifications =>
+      _otaCharacteristic?.onValueReceived;
 
   Future<bool> subscribeOtaNotifications() async {
     if (_otaCharacteristic == null) return false;
@@ -223,18 +245,26 @@ class BLEManager extends ChangeNotifier {
   }
 
   Future<void> unsubscribeOtaNotifications() async {
-    try { await _otaCharacteristic?.setNotifyValue(false); } catch (_) {}
+    try {
+      await _otaCharacteristic?.setNotifyValue(false);
+    } catch (_) {}
   }
 
   // ==================== DISCONNECT ====================
 
   Future<void> disconnect({bool skipConfigOff = false}) async {
     if (_connectedDevice != null) {
-      try { await unsubscribeOtaNotifications(); } catch (_) {}
+      try {
+        await unsubscribeOtaNotifications();
+      } catch (_) {}
       if (!skipConfigOff) {
-        try { await sendConfigModeOff(); } catch (_) {}
+        try {
+          await sendConfigModeOff();
+        } catch (_) {}
       }
-      try { await _connectedDevice!.disconnect(); } catch (_) {}
+      try {
+        await _connectedDevice!.disconnect();
+      } catch (_) {}
     }
     _connectedDevice = null;
     _configCharacteristic = null;

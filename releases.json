@@ -1,6 +1,6 @@
-﻿{
-  "version": "2.1.0",
-  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v2.1.0/app-release.apk",
-  "releaseNotes": "Updated branding string to HUGEROCK-ITALIA with hyphen; version bump to 2.1.0",
+{
+  "version": "2.1.1",
+  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v2.1.1/app-debug.apk",
+  "releaseNotes": "Corrected branding string from HUGEROCK-ITALIA to HUGEROCK-ITALY; patch version bump to 2.1.1",
   "date": "2026-05-17"
 }
