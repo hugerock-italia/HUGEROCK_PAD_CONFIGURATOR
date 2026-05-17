@@ -7,7 +7,8 @@ import '../models/enums.dart';
 
 class AutoConfigScreen extends StatefulWidget {
   final BLEManager bleManager;
-  const AutoConfigScreen({Key? key, required this.bleManager}) : super(key: key);
+  const AutoConfigScreen({Key? key, required this.bleManager})
+      : super(key: key);
 
   @override
   State<AutoConfigScreen> createState() => _AutoConfigScreenState();
@@ -24,7 +25,8 @@ class _AutoConfigScreenState extends State<AutoConfigScreen>
   void initState() {
     super.initState();
     _selectedMap = KeyMap.map1;
-    _tabController = TabController(length: profileCategories.length, vsync: this);
+    _tabController =
+        TabController(length: profileCategories.length, vsync: this);
   }
 
   @override
@@ -65,14 +67,17 @@ class _AutoConfigScreenState extends State<AutoConfigScreen>
       // Salva su SharedPreferences per aggiornare config_screen
       final prefs = await SharedPreferences.getInstance();
       for (int keyIndex = 0; keyIndex < 14; keyIndex++) {
-        await prefs.setInt('map_${mapId}_key_$keyIndex', _selectedProfile!.assignments[keyIndex]);
-        await prefs.setBool('map_${mapId}_key_${keyIndex}_repeat', _selectedProfile!.repeatFlags[keyIndex]);
+        await prefs.setInt('map_${mapId}_key_$keyIndex',
+            _selectedProfile!.assignments[keyIndex]);
+        await prefs.setBool('map_${mapId}_key_${keyIndex}_repeat',
+            _selectedProfile!.repeatFlags[keyIndex]);
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✓ ${_selectedProfile!.name} applicato a ${_selectedMap.displayName}'),
+            content: Text(
+                '✓ ${_selectedProfile!.name} applicato a ${_selectedMap.displayName}'),
             backgroundColor: Colors.green[700],
             duration: const Duration(seconds: 2),
           ),
@@ -82,7 +87,8 @@ class _AutoConfigScreenState extends State<AutoConfigScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red[700]),
+          SnackBar(
+              content: Text('Error: $e'), backgroundColor: Colors.red[700]),
         );
       }
     } finally {
@@ -110,9 +116,8 @@ class _AutoConfigScreenState extends State<AutoConfigScreen>
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: profileCategories
-                    .map((cat) => _buildAppList(cat))
-                    .toList(),
+                children:
+                    profileCategories.map((cat) => _buildAppList(cat)).toList(),
               ),
             ),
             if (_selectedProfile != null) _buildApplyBar(),
@@ -142,19 +147,26 @@ class _AutoConfigScreenState extends State<AutoConfigScreen>
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.sandMedium.withOpacity(0.15) : AppColors.surface,
+                color: isSelected
+                    ? AppColors.sandMedium.withOpacity(0.15)
+                    : AppColors.surface,
                 borderRadius: BorderRadius.circular(AppTheme.borderRadius),
                 border: Border.all(
-                  color: isSelected ? AppColors.sandMedium : AppColors.surfaceLight,
+                  color: isSelected
+                      ? AppColors.sandMedium
+                      : AppColors.surfaceLight,
                   width: isSelected ? 2 : 1,
                 ),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 48, height: 48,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.sandMedium : AppColors.surfaceLight,
+                      color: isSelected
+                          ? AppColors.sandMedium
+                          : AppColors.surfaceLight,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(profile.icon, color: Colors.white, size: 24),
@@ -165,24 +177,34 @@ class _AutoConfigScreenState extends State<AutoConfigScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(profile.name,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15)),
                         const SizedBox(height: 3),
                         Text(profile.description,
-                            style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                            style: const TextStyle(
+                                color: Colors.white54, fontSize: 12)),
                         const SizedBox(height: 4),
                         Row(
                           children: [
                             const Text('Recommended map: ',
-                                style: TextStyle(color: Colors.white38, fontSize: 11)),
+                                style: TextStyle(
+                                    color: Colors.white38, fontSize: 11)),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: recommendedMap.color.withOpacity(0.3),
                                 borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: recommendedMap.color, width: 1),
+                                border: Border.all(
+                                    color: recommendedMap.color, width: 1),
                               ),
                               child: Text(recommendedMap.displayName,
-                                  style: TextStyle(color: recommendedMap.color, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  style: TextStyle(
+                                      color: recommendedMap.color,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -205,45 +227,58 @@ class _AutoConfigScreenState extends State<AutoConfigScreen>
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.surfaceLight, width: 1)),
+        border:
+            Border(top: BorderSide(color: AppColors.surfaceLight, width: 1)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              Icon(_selectedProfile!.icon, color: AppColors.sandMedium, size: 16),
+              Icon(_selectedProfile!.icon,
+                  color: AppColors.sandMedium, size: 16),
               const SizedBox(width: 8),
               Text(_selectedProfile!.name,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13)),
               const Spacer(),
-              const Text('Apply to:', style: TextStyle(color: Colors.white54, fontSize: 11)),
+              const Text('Apply to:',
+                  style: TextStyle(color: Colors.white54, fontSize: 11)),
             ],
           ),
           const SizedBox(height: 10),
           Row(
-            children: KeyMap.values.map((map) => Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 3),
-                child: GestureDetector(
-                  onTap: () => setState(() => _selectedMap = map),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: _selectedMap == map ? map.color : AppColors.surfaceLight,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      map.displayName,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              ),
-            )).toList(),
+            children: KeyMap.values
+                .map((map) => Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: GestureDetector(
+                          onTap: () => setState(() => _selectedMap = map),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: _selectedMap == map
+                                  ? map.color
+                                  : AppColors.surfaceLight,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              map.displayName,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ))
+                .toList(),
           ),
           const SizedBox(height: 10),
           SizedBox(
@@ -256,11 +291,18 @@ class _AutoConfigScreenState extends State<AutoConfigScreen>
                 disabledBackgroundColor: AppColors.surfaceLight,
               ),
               child: _applying
-                  ? const SizedBox(height: 22, width: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
+                  ? const SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white)))
                   : const Text('APPLY',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1)),
             ),
           ),
         ],

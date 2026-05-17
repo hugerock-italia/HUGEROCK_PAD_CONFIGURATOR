@@ -6,16 +6,18 @@ import '../services/ble_manager.dart';
 import '../models/enums.dart';
 
 const String _githubOwner = 'hugerock-italia';
-const String _githubRepo  = 'kat1-firmware';
+const String _githubRepo = 'kat1-firmware';
 // ignore: unused_element
-const int    _chunkSize   = 512;
-const int    _chunkDelay  = 30;
+const int _chunkSize = 512;
+const int _chunkDelay = 30;
 
 class OtaScreen extends StatefulWidget {
   final BLEManager bleManager;
   final DeviceType deviceType;
 
-  const OtaScreen({Key? key, required this.bleManager, required this.deviceType}) : super(key: key);
+  const OtaScreen(
+      {Key? key, required this.bleManager, required this.deviceType})
+      : super(key: key);
 
   @override
   State<OtaScreen> createState() => _OtaScreenState();
@@ -38,11 +40,17 @@ class _OtaScreenState extends State<OtaScreen> {
   }
 
   Future<void> _checkLatestRelease() async {
-    setState(() { _loading = true; _status = 'Connecting to GitHub...'; });
+    setState(() {
+      _loading = true;
+      _status = 'Connecting to GitHub...';
+    });
     try {
-      final url = 'https://api.github.com/repos/$_githubOwner/$_githubRepo/releases/latest';
-      final response = await http.get(Uri.parse(url), headers: {'Accept': 'application/vnd.github.v3+json'});
-      if (response.statusCode != 200) throw Exception('GitHub API error: ${response.statusCode}');
+      final url =
+          'https://api.github.com/repos/$_githubOwner/$_githubRepo/releases/latest';
+      final response = await http.get(Uri.parse(url),
+          headers: {'Accept': 'application/vnd.github.v3+json'});
+      if (response.statusCode != 200)
+        throw Exception('GitHub API error: ${response.statusCode}');
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final version = data['tag_name'] as String;
@@ -51,31 +59,48 @@ class _OtaScreenState extends State<OtaScreen> {
 
       String? foundUrl;
       for (final asset in assets) {
-        if ((asset['name'] as String).toLowerCase() == assetName.toLowerCase()) {
+        if ((asset['name'] as String).toLowerCase() ==
+            assetName.toLowerCase()) {
           foundUrl = asset['browser_download_url'] as String;
           break;
         }
       }
-      if (foundUrl == null) throw Exception('File $assetName non trovato nella release');
+      if (foundUrl == null)
+        throw Exception('File $assetName non trovato nella release');
 
-      setState(() { _latestVersion = version; _assetUrl = foundUrl; _status = 'Versione disponibile: $version'; _loading = false; });
+      setState(() {
+        _latestVersion = version;
+        _assetUrl = foundUrl;
+        _status = 'Versione disponibile: $version';
+        _loading = false;
+      });
     } catch (e) {
-      setState(() { _status = 'Error: $e'; _loading = false; });
+      setState(() {
+        _status = 'Error: $e';
+        _loading = false;
+      });
     }
   }
 
   Future<void> _startUpdate() async {
     if (_assetUrl == null) return;
-    setState(() { _updating = true; _progress = 0; _sentBytes = 0; _status = 'Downloading firmware...'; });
+    setState(() {
+      _updating = true;
+      _progress = 0;
+      _sentBytes = 0;
+      _status = 'Downloading firmware...';
+    });
 
     try {
       final response = await http.get(Uri.parse(_assetUrl!));
-      if (response.statusCode != 200) throw Exception('Download fallito: ${response.statusCode}');
+      if (response.statusCode != 200)
+        throw Exception('Download fallito: ${response.statusCode}');
 
       final Uint8List firmware = response.bodyBytes;
       _totalBytes = firmware.length;
 
-      setState(() => _status = 'Starting OTA on ${widget.deviceType.displayName}...');
+      setState(() =>
+          _status = 'Starting OTA on ${widget.deviceType.displayName}...');
       final hasNotify = await widget.bleManager.subscribeOtaNotifications();
 
       bool otaError = false;
@@ -86,13 +111,16 @@ class _OtaScreenState extends State<OtaScreen> {
       }
 
       await widget.bleManager.startOta(_totalBytes);
-      setState(() => _status = 'Sending firmware... (chunk: \${widget.bleManager.otaChunkSize}B)');
+      setState(() => _status =
+          'Sending firmware... (chunk: \${widget.bleManager.otaChunkSize}B)');
 
       final chunkSize = widget.bleManager.otaChunkSize;
       int offset = 0;
       while (offset < firmware.length) {
         if (otaError) throw Exception('OTA error reported by device');
-        final end = (offset + chunkSize < firmware.length) ? offset + chunkSize : firmware.length;
+        final end = (offset + chunkSize < firmware.length)
+            ? offset + chunkSize
+            : firmware.length;
         await widget.bleManager.sendOtaChunk(firmware.sublist(offset, end));
         offset = end;
         _sentBytes = offset;
@@ -101,15 +129,27 @@ class _OtaScreenState extends State<OtaScreen> {
       }
 
       setState(() => _status = 'Finalizing...');
-      try { await widget.bleManager.endOta(); } catch (_) {}
+      try {
+        await widget.bleManager.endOta();
+      } catch (_) {}
       await widget.bleManager.unsubscribeOtaNotifications();
 
-      setState(() { _status = '✓ Update complete! Device is restarting.'; _updating = false; _progress = 1.0; });
+      setState(() {
+        _status = '✓ Update complete! Device is restarting.';
+        _updating = false;
+        _progress = 1.0;
+      });
       await Future.delayed(const Duration(seconds: 4));
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      try { await widget.bleManager.unsubscribeOtaNotifications(); } catch (_) {}
-      setState(() { _status = 'Error: $e'; _updating = false; _progress = 0; });
+      try {
+        await widget.bleManager.unsubscribeOtaNotifications();
+      } catch (_) {}
+      setState(() {
+        _status = 'Error: $e';
+        _updating = false;
+        _progress = 0;
+      });
     }
   }
 
@@ -127,11 +167,14 @@ class _OtaScreenState extends State<OtaScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 24),
-              const Icon(Icons.system_update, size: 64, color: Color(0xFF1A237E)),
+              const Icon(Icons.system_update,
+                  size: 64, color: Color(0xFF1A237E)),
               const SizedBox(height: 24),
-              Text('Firmware Update', style: Theme.of(context).textTheme.headlineLarge),
+              Text('Firmware Update',
+                  style: Theme.of(context).textTheme.headlineLarge),
               const SizedBox(height: 8),
-              Text(widget.deviceType.displayName, style: Theme.of(context).textTheme.bodyMedium),
+              Text(widget.deviceType.displayName,
+                  style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: 32),
 
               // STATUS BOX
@@ -147,14 +190,19 @@ class _OtaScreenState extends State<OtaScreen> {
                     if (_loading) const CircularProgressIndicator(),
                     if (!_loading && _latestVersion != null) ...[
                       Text('Repository: $_githubOwner/$_githubRepo',
-                          style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                          style: const TextStyle(
+                              color: Colors.white54, fontSize: 12)),
                       const SizedBox(height: 4),
                       Text(_latestVersion!,
-                          style: const TextStyle(color: Colors.greenAccent, fontSize: 22, fontWeight: FontWeight.bold)),
+                          style: const TextStyle(
+                              color: Colors.greenAccent,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold)),
                     ],
                     const SizedBox(height: 8),
                     Text(_status,
-                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        style: const TextStyle(
+                            color: Colors.white70, fontSize: 13),
                         textAlign: TextAlign.center),
                   ],
                 ),
@@ -167,7 +215,8 @@ class _OtaScreenState extends State<OtaScreen> {
                 LinearProgressIndicator(
                   value: _progress,
                   backgroundColor: Colors.grey[800],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
                   minHeight: 8,
                 ),
                 const SizedBox(height: 8),
@@ -185,10 +234,16 @@ class _OtaScreenState extends State<OtaScreen> {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: _latestVersion != null && !_loading ? _startUpdate : null,
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1A237E)),
+                    onPressed: _latestVersion != null && !_loading
+                        ? _startUpdate
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1A237E)),
                     child: const Text('SCARICA E INSTALLA',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -209,19 +264,23 @@ class _OtaScreenState extends State<OtaScreen> {
                   height: 52,
                   child: ElevatedButton(
                     onPressed: null,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[800]),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[800]),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const SizedBox(
-                          width: 20, height: 20,
+                          width: 20,
+                          height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Text('UPDATING...', style: TextStyle(fontSize: 13)),
+                        const Text('UPDATING...',
+                            style: TextStyle(fontSize: 13)),
                       ],
                     ),
                   ),
