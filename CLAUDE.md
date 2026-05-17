@@ -1,4 +1,4 @@
-# KAT-ADV Companion App — Project Context
+﻿# KAT-ADV Companion App — Project Context
 
 Questo file viene caricato automaticamente da Claude Code in ogni sessione. Contiene il contesto persistente del progetto: cos'è, com'è organizzato, e le convenzioni di lavoro.
 
@@ -66,12 +66,14 @@ HUGEROCK_PAD_CONFIGURATOR/
 
 ## Rete di agenti Claude Code
 
-Il progetto usa una rete di sub-agenti in `.claude/agents/`. Fase attuale del piano: **A** (3 agenti operativi).
+Il progetto usa una rete di sub-agenti in `.claude/agents/`. Fase attuale del piano: **C** (5 agenti operativi).
 
 Agenti attivi:
 - **orchestrator** — decompone i task, smista, valida UX gate
 - **app-engineer-flutter** — modifica codice Dart e configurazioni
 - **github-operator** — operazioni Git e GitHub (branch, commit, push, PR)
+- **fw-engineer-arduino** — modifica sketch Arduino (.ino) per ESP32-S3; applica regola common/board-specific
+- **fw-build-validator** — compila con arduino-cli, valida dimensione binario rispetto allo slot OTA
 
 Documento di architettura completo della rete: `KAT-ADV-Agent-Network.md` nel root del repo (se presente).
 
@@ -100,3 +102,53 @@ Esempio SBAGLIATO:
 - Sistema: **Windows**
 - Auth GitHub: gestita da GitHub Desktop (Git Credential Manager). gh CLI installato ma autenticazione separata in `.claude/settings.local.json` (file gitignored)
 - Path semplice (`C:\HUGEROCK\APP\HUGEROCK_PAD_CONFIGURATOR\`) per evitare problemi bash con caratteri speciali
+
+## Track firmware (Fase C)
+
+### Repository
+`https://github.com/hugerock-italia/kat1-firmware` (privato)
+
+### Struttura attesa
+```
+kat1-firmware/
+├── DISCOVERY/
+│   └── DISCOVERY_03.ino     # joystick analogico Hall
+└── EXTREME/
+    └── EXTREME_05.ino       # levetta digitale
+```
+I due sketch sono ~90% identici. Strategia: ZERO refactor verso libreria condivisa. Ogni modifica va classificata "common" o "board-specific" — vedi regola nel profilo fw-engineer-arduino.
+
+### Toolchain — Setup Windows
+```
+winget install ArduinoSA.CLI
+arduino-cli core install esp32:esp32
+arduino-cli lib install "NimBLE-Arduino" "Keypad"
+```
+Prerequisito: arduino-cli deve essere nel PATH prima di usare fw-build-validator.
+
+### FQBN board
+- **Dev (Xiao ESP32-S3):** `esp32:esp32:XIAO_ESP32S3`
+- **Prod (ESP32-S3-WROOM-1U):** `esp32:esp32:esp32s3:USBMode=hwcdc,CDCOnBoot=default,MSCOnBoot=default,DFUOnBoot=default,UploadMode=default,CPUFreq=240,FlashMode=qio80,FlashSize=4M,PartitionScheme=default,DebugLevel=none,PSRAM=disabled,LoopCore=1,EventsCore=1,EraseFlash=none,JTAGAdapter=default`
+
+### Slot OTA produzione
+Partition: "Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)"
+Slot app max: **1.228.800 bytes**
+fw-build-validator usa questa soglia: > 95% = warning, > 100% = fail bloccante.
+
+### Protocollo OTA BLE (riepilogo)
+1. App Flutter invia `CONFIG:OTA:BEGIN:<size>` sulla characteristica di controllo
+2. App invia il binario a chunk su `otaCharacteristic`
+3. App invia `CONFIG:OTA:END`
+4. Il device verifica il binario e riavvia sul nuovo firmware
+
+### Regola common vs board-specific
+- **Common**: modifica identica su entrambi gli sketch → fw-engineer-arduino applica su DISCOVERY e EXTREME nello stesso turno
+- **Board-specific**: modifica su un solo sketch → fw-engineer-arduino dichiara quale e perché l'altro non è coinvolto
+
+### Agenti del track firmware
+- `fw-engineer-arduino` — scrive/modifica gli sketch .ino
+- `fw-build-validator` — compila con arduino-cli e valida dimensione binario
+
+### TODO — Verifica flash board produzione
+Al primo build reale, verificare se la board è N8 (8MB flash) invece di N4 (4MB).
+Se confermato N8: valutare passaggio a `FlashSize=8M` con partition `min_spiffs` per raddoppiare lo spazio disponibile per l'app.
