@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -158,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 connected && deviceType != null
                     ? '${deviceType.displayName} connected'
-                    : 'Extreme · Discovery',
+                    : 'Extreme Â· Discovery',
                 style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
@@ -282,11 +282,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
-                      '• 3 maps: Yellow / Blue / Green\n'
-                      '• Auto config with GPS & roadbook presets\n'
-                      '• Automatic BLE connection\n'
-                      '• Firmware update via BLE\n'
-                      '• Extreme: roadbook lever | Discovery: joystick',
+                      'â€¢ 3 maps: Yellow / Blue / Green\n'
+                      'â€¢ Auto config with GPS & roadbook presets\n'
+                      'â€¢ Automatic BLE connection\n'
+                      'â€¢ Firmware update via BLE\n'
+                      'â€¢ Extreme: roadbook lever | Discovery: joystick',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ],
@@ -303,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   textAlign: TextAlign.center,
                 ),
               Text(
-                'designed by kat-adv',
+                'designed by HUGEROCK ITALIA',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.sandGrey,
                     ),
