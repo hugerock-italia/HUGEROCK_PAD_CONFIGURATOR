@@ -121,9 +121,9 @@ enum KeyboardKey {
 
 // id 0-based: corrisponde all'indice array firmware
 enum KeyMap {
-  map1(0, 'Yellow', Color(0xFFF9A825)),
-  map2(1, 'Blue', Color(0xFF1565C0)),
-  map3(2, 'Green', Color(0xFF2E7D32));
+  map1(0, 'Map 1', Color(0xFFF9A825)),
+  map2(1, 'Map 2', Color(0xFF1565C0)),
+  map3(2, 'Map 3', Color(0xFF2E7D32));
 
   final int id;
   final String displayName;

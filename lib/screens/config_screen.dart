@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import '../services/ble_manager.dart';
@@ -26,11 +27,19 @@ class _ConfigScreenState extends State<ConfigScreen> {
   Map<int, Map<int, bool>> repeatFlags = {};
   Map<int, bool> wheelEnabled = {};
 
+  // Map index (0-based) -> selected LED Color for the map
+  final Map<int, Color> _mapColors = {
+    0: const Color(0xFFF9A825),
+    1: const Color(0xFF1565C0),
+    2: const Color(0xFF2E7D32),
+  };
+
   @override
   void initState() {
     super.initState();
     selectedMap = KeyMap.map1;
     _loadConfigs();
+    _initMapColors();
   }
 
   Future<void> _loadConfigs() async {
@@ -49,6 +58,76 @@ class _ConfigScreenState extends State<ConfigScreen> {
         wheelEnabled[map] = prefs.getBool('map_${map}_wheel_enabled') ?? true;
       }
     });
+  }
+
+  /// Fetches current map colors from device and updates [_mapColors] on response.
+  Future<void> _initMapColors() async {
+    try {
+      await widget.bleManager.subscribeConfigNotifications();
+      final stream = widget.bleManager.configNotifications;
+      if (stream != null) {
+        stream.listen((data) {
+          final msg = String.fromCharCodes(data);
+          if (msg.startsWith('MAP_COLORS:')) {
+            final parts = msg.substring(11).split(':');
+            if (parts.length >= 9 && mounted) {
+              setState(() {
+                _mapColors[0] = Color.fromARGB(255, int.parse(parts[0]),
+                    int.parse(parts[1]), int.parse(parts[2]));
+                _mapColors[1] = Color.fromARGB(255, int.parse(parts[3]),
+                    int.parse(parts[4]), int.parse(parts[5]));
+                _mapColors[2] = Color.fromARGB(255, int.parse(parts[6]),
+                    int.parse(parts[7]), int.parse(parts[8]));
+              });
+            }
+          }
+        });
+      }
+      await widget.bleManager.sendGetColors();
+    } catch (e) {
+      debugPrint('[MapColor] _initMapColors error: $e');
+    }
+  }
+
+  /// Opens a color picker dialog for the given [mapIndex] (0-based).
+  /// On confirm, sends CONFIG:MAP_COLOR via BLE and updates local state.
+  Future<void> _openColorPicker(int mapIndex) async {
+    Color pickedColor = _mapColors[mapIndex] ?? Colors.white;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Map ${mapIndex + 1} color'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: pickedColor,
+            onColorChanged: (c) => pickedColor = c,
+            enableAlpha: false,
+            labelTypes: const [],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              if (mounted) setState(() => _mapColors[mapIndex] = pickedColor);
+              final r = (pickedColor.r * 255.0).round().clamp(0, 255);
+              final g = (pickedColor.g * 255.0).round().clamp(0, 255);
+              final b = (pickedColor.b * 255.0).round().clamp(0, 255);
+              try {
+                await widget.bleManager.sendMapColor(mapIndex + 1, r, g, b);
+              } catch (e) {
+                debugPrint('[MapColor] sendMapColor error: $e');
+              }
+            },
+            child: const Text('CONFIRM'),
+          ),
+        ],
+      ),
+    );
   }
 
   int _getDefaultCommand(int map, int key) {
@@ -322,6 +401,62 @@ class _ConfigScreenState extends State<ConfigScreen> {
                         },
                         onToggleRepeat: _toggleRepeat,
                       ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: isLandscape ? 6 : 12),
+
+                // MAP COLORS
+                Container(
+                  padding: EdgeInsets.all(isLandscape ? 4 : 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'MAP COLORS',
+                        style: TextStyle(
+                            fontSize: isLandscape ? 11 : 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                      ),
+                      SizedBox(height: isLandscape ? 4 : 8),
+                      ...List.generate(
+                          3,
+                          (i) => Padding(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: ListTile(
+                                  dense: true,
+                                  contentPadding:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  leading: GestureDetector(
+                                    onTap: () => _openColorPicker(i),
+                                    child: Container(
+                                      width: 36,
+                                      height: 36,
+                                      decoration: BoxDecoration(
+                                        color: _mapColors[i] ?? Colors.white,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: Colors.white30, width: 1),
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    'Map ${i + 1}',
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 13),
+                                  ),
+                                  trailing: TextButton(
+                                    onPressed: () => _openColorPicker(i),
+                                    child: const Text('CHANGE',
+                                        style: TextStyle(fontSize: 11)),
+                                  ),
+                                ),
+                              )),
                     ],
                   ),
                 ),
