@@ -13,7 +13,6 @@ Funzioni principali dell'app:
 - Gestione mappe di tasti per app diverse (DMD2, Whip Live, ecc.)
 
 Repository GitHub: `hugerock-italia/HUGEROCK_PAD_CONFIGURATOR`
-Path locale: `C:\HUGEROCK\APP\HUGEROCK_PAD_CONFIGURATOR\`
 
 ## Stack tecnico
 
@@ -107,13 +106,14 @@ Esempio SBAGLIATO:
 
 ### Repository
 `https://github.com/hugerock-italia/kat1-firmware` (privato)
+Path locale: `C:\HUGEROCK\FW\kat1-firmware`
 
 ### Struttura attesa
 ```
 kat1-firmware/
-├── DISCOVERY/
+├── DISCOVERY_03/
 │   └── DISCOVERY_03.ino     # joystick analogico Hall
-└── EXTREME/
+└── EXTREME_05/
     └── EXTREME_05.ino       # levetta digitale
 ```
 I due sketch sono ~90% identici. Strategia: ZERO refactor verso libreria condivisa. Ogni modifica va classificata "common" o "board-specific" — vedi regola nel profilo fw-engineer-arduino.
@@ -128,7 +128,7 @@ Prerequisito: arduino-cli deve essere nel PATH prima di usare fw-build-validator
 
 ### FQBN board
 - **Dev (Xiao ESP32-S3):** `esp32:esp32:XIAO_ESP32S3`
-- **Prod (ESP32-S3-WROOM-1U):** `esp32:esp32:esp32s3:USBMode=hwcdc,CDCOnBoot=default,MSCOnBoot=default,DFUOnBoot=default,UploadMode=default,CPUFreq=240,FlashMode=qio80,FlashSize=4M,PartitionScheme=default,DebugLevel=none,PSRAM=disabled,LoopCore=1,EventsCore=1,EraseFlash=none,JTAGAdapter=default`
+- **Prod (ESP32-S3-WROOM-1U):** `esp32:esp32:esp32s3:USBMode=hwcdc,CDCOnBoot=default,MSCOnBoot=default,DFUOnBoot=default,UploadMode=default,CPUFreq=240,FlashMode=qio,FlashSize=4M,PartitionScheme=default,DebugLevel=none,PSRAM=disabled,LoopCore=1,EventsCore=1,EraseFlash=none,JTAGAdapter=default`
 
 ### Slot OTA produzione
 Partition: "Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)"
