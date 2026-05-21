@@ -259,6 +259,17 @@ class _ConfigScreenState extends State<ConfigScreen> {
                 await widget.bleManager
                     .sendConfigCommand(mapId, key, cmd, repeat: rep);
               }
+              // Reset map color to factory default defined in KeyMap enum.
+              final defaultColor = KeyMap.fromId(mapId).color;
+              final r = (defaultColor.r * 255.0).round().clamp(0, 255);
+              final g = (defaultColor.g * 255.0).round().clamp(0, 255);
+              final b = (defaultColor.b * 255.0).round().clamp(0, 255);
+              if (mounted) setState(() => _mapColors[mapId] = defaultColor);
+              try {
+                await widget.bleManager.sendMapColor(mapId + 1, r, g, b);
+              } catch (e) {
+                debugPrint('[MapColor] reset default color error: $e');
+              }
               scaffoldMessenger.showSnackBar(
                 SnackBar(
                     content: Text('✓ $mapName reset'),
