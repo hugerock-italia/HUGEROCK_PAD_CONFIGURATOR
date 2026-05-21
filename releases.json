@@ -1,6 +1,6 @@
 {
   "version": "3.0.1",
   "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.0.1/app-release.apk",
-  "releaseNotes": "Configurable map key colors: set custom colors per app profile (DMD2, Whip Live, etc.) and sync them to the pad via BLE",
+  "releaseNotes": "Home screen now shows 3 configurable keymap labels for quick identification of app profiles (DMD2, Whip Live, custom)",
   "date": "2026-05-21"
 }
