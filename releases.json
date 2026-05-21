@@ -1,7 +1,7 @@
 {
-  "version": "3.0.2",
-  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.0.2/app-release.apk",
-  "releaseNotes": "Home screen now shows 3 configurable keymap labels for quick identification of app profiles (DMD2, Whip Live, custom). App version is now displayed in the home screen. Fixed Default button to properly reset map colors to default values.",
-  "date": "2026-05-21",
-  "firmwareLatest": "v0.2.0"
+  "version": "3.0.3",
+  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.0.3/app-release.apk",
+  "releaseNotes": "Added 30-second post-OTA reconnect timeout with recovery dialog if device fails to restart. Firmware v3.0.3 includes OTA rollback validation and watchdog reset during chunk transfer to prevent brick.",
+  "date": "2026-05-22",
+  "firmwareLatest": "v3.0.3"
 }

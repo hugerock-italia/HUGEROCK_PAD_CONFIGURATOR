@@ -135,12 +135,53 @@ class _OtaScreenState extends State<OtaScreen> {
       await widget.bleManager.unsubscribeOtaNotifications();
 
       setState(() {
-        _status = '✓ Update complete! Device is restarting.';
-        _updating = false;
+        _status = 'Waiting for device to restart...';
         _progress = 1.0;
       });
-      await Future.delayed(const Duration(seconds: 4));
-      if (mounted) Navigator.pop(context);
+
+      // Wait up to 30 s for BLE reconnection after OTA restart
+      bool reconnected = false;
+      final deadline = DateTime.now().add(const Duration(seconds: 30));
+      while (DateTime.now().isBefore(deadline)) {
+        await Future.delayed(const Duration(seconds: 1));
+        if (widget.bleManager.isConnected) {
+          reconnected = true;
+          break;
+        }
+      }
+
+      if (reconnected) {
+        setState(() {
+          _status = 'Update complete! Device restarted successfully.';
+          _updating = false;
+          _progress = 1.0;
+        });
+        await Future.delayed(const Duration(seconds: 2));
+        if (mounted) Navigator.pop(context);
+      } else {
+        setState(() {
+          _updating = false;
+        });
+        if (mounted) {
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Firmware update failed'),
+              content: const Text(
+                'The device did not restart correctly. To recover it, open the case, '
+                'connect via USB and re-flash the firmware manually with arduino-cli.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+      }
     } catch (e) {
       try {
         await widget.bleManager.unsubscribeOtaNotifications();
