@@ -282,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
-                      '• 3 maps: Yellow / Blue / Green\n'
+                      '• 3 configurable keymaps\n'
                       '• Auto config with GPS & roadbook presets\n'
                       '• Automatic BLE connection\n'
                       '• Firmware update via BLE\n'
