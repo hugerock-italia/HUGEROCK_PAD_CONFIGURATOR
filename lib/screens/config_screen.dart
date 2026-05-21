@@ -306,7 +306,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
   Future<void> _toggleWheel(int mapId, bool enabled) async {
     setState(() => wheelEnabled[mapId] = enabled);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('map_\${mapId}_wheel_enabled', enabled);
+    await prefs.setBool('map_${mapId}_wheel_enabled', enabled);
     await widget.bleManager.sendWheelEnable(mapId, enabled);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
