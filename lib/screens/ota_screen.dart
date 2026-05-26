@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../services/ble_manager.dart';
+import '../services/update_checker.dart';
 import '../models/enums.dart';
 
 const String _githubOwner = 'hugerock-italia';
@@ -29,6 +30,7 @@ class _OtaScreenState extends State<OtaScreen> {
   String _status = 'Verifico aggiornamenti...';
   bool _loading = true;
   bool _updating = false;
+  bool _updateNeeded = true;
   double _progress = 0.0;
   int _totalBytes = 0;
   int _sentBytes = 0;
@@ -68,11 +70,20 @@ class _OtaScreenState extends State<OtaScreen> {
       if (foundUrl == null)
         throw Exception('File $assetName non trovato nella release');
 
+      final deviceVersion = widget.bleManager.connectedFirmwareVersion;
+      final latestClean =
+          version.startsWith('v') ? version.substring(1) : version;
+      final needsUpdate = deviceVersion == null ||
+          UpdateChecker.isNewer(latestClean, deviceVersion);
+
       setState(() {
         _latestVersion = version;
         _assetUrl = foundUrl;
-        _status = 'Versione disponibile: $version';
+        _status = needsUpdate
+            ? 'Aggiornamento disponibile: $version'
+            : 'Firmware aggiornato ✓';
         _loading = false;
+        _updateNeeded = needsUpdate;
       });
     } catch (e) {
       setState(() {
@@ -198,6 +209,14 @@ class _OtaScreenState extends State<OtaScreen> {
                               color: Colors.greenAccent,
                               fontSize: 22,
                               fontWeight: FontWeight.bold)),
+                      if (widget.bleManager.connectedFirmwareVersion !=
+                          null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                            'Installato: ${widget.bleManager.connectedFirmwareVersion}',
+                            style: const TextStyle(
+                                color: Colors.white54, fontSize: 12)),
+                      ],
                     ],
                     const SizedBox(height: 8),
                     Text(_status,
@@ -234,9 +253,10 @@ class _OtaScreenState extends State<OtaScreen> {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: _latestVersion != null && !_loading
-                        ? _startUpdate
-                        : null,
+                    onPressed:
+                        _latestVersion != null && !_loading && _updateNeeded
+                            ? _startUpdate
+                            : null,
                     style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1A237E)),
                     child: const Text('SCARICA E INSTALLA',
