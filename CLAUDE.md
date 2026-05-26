@@ -1,4 +1,4 @@
-﻿# KAT-ADV Companion App — Project Context
+# KAT-ADV Companion App — Project Context
 
 Questo file viene caricato automaticamente da Claude Code in ogni sessione. Contiene il contesto persistente del progetto: cos'è, com'è organizzato, e le convenzioni di lavoro.
 
@@ -27,17 +27,28 @@ Repository GitHub: `hugerock-italia/HUGEROCK_PAD_CONFIGURATOR`
 ```
 HUGEROCK_PAD_CONFIGURATOR/
 ├── lib/
-│   ├── main.dart                # entry point, definisce AppColors, AppTheme
+│   ├── main.dart                # entry point
+│   ├── config/                  # AppColors, AppTheme
+│   │   ├── colors.dart
+│   │   └── app_theme.dart
+│   ├── models/                  # enums (DeviceType, CommandID, KeyMap, …)
+│   │   ├── enums.dart
+│   │   └── app_profiles.dart
 │   ├── screens/                 # schermate principali dell'app
 │   │   ├── home_screen.dart
 │   │   ├── config_screen.dart
 │   │   ├── ota_screen.dart
 │   │   └── auto_config_screen.dart
-│   └── services/                # logica di business
-│       └── ble_manager.dart
+│   ├── services/                # logica di business
+│   │   ├── ble_manager.dart     # BLE scan/connect, comandi, connectedFirmwareVersion
+│   │   └── update_checker.dart  # check aggiornamenti app e firmware da releases.json
+│   └── widgets/                 # widget riutilizzabili
+│       ├── update_dialog.dart
+│       ├── keyboard_button_display.dart
+│       └── keyboard_selector.dart
 ├── android/                     # configurazione Android nativa
 ├── assets/                      # immagini, font, icone
-├── test/                        # test unitari e widget
+├── releases.json                # versione app e firmware correnti (letto da update_checker)
 ├── pubspec.yaml                 # dipendenze e metadata
 ├── .claude/
 │   ├── agents/                  # sub-agenti Claude Code
@@ -108,21 +119,25 @@ Esempio SBAGLIATO:
 `https://github.com/hugerock-italia/kat1-firmware` (privato)
 Path locale: `C:\HUGEROCK\FW\kat1-firmware`
 
-### Struttura attesa
+### Struttura reale
 ```
 kat1-firmware/
-├── DISCOVERY_03/
-│   └── DISCOVERY_03.ino     # joystick analogico Hall
-└── EXTREME_05/
-    └── EXTREME_05.ino       # levetta digitale
+├── DISCOVERY_03_XIAO/
+│   └── DISCOVERY_03_XIAO.ino   # dev board Xiao ESP32-S3, joystick Hall, LED catodo comune
+├── DISCOVERY_03_WROOM/
+│   └── DISCOVERY_03_WROOM.ino  # prod ESP32-S3-WROOM, LED anodo comune
+├── EXTREME_05_XIAO/
+│   └── EXTREME_05_XIAO.ino     # dev board Xiao ESP32-S3, levetta digitale
+└── EXTREME_05_WROOM/
+    └── EXTREME_05_WROOM.ino    # prod ESP32-S3-WROOM, levetta digitale
 ```
-I due sketch sono ~90% identici. Strategia: ZERO refactor verso libreria condivisa. Ogni modifica va classificata "common" o "board-specific" — vedi regola nel profilo fw-engineer-arduino.
+I quattro sketch sono ~90% identici. Strategia: ZERO refactor verso libreria condivisa. Ogni modifica va classificata "common" o "board-specific" — vedi regola nel profilo fw-engineer-arduino.
 
 ### Toolchain — Setup Windows
 ```
 winget install ArduinoSA.CLI
-arduino-cli core install esp32:esp32
-arduino-cli lib install "NimBLE-Arduino" "Keypad"
+arduino-cli core install esp32:esp32@2.0.17
+arduino-cli lib install "NimBLE-Arduino@1.4.2" "Keypad"
 ```
 Prerequisito: arduino-cli deve essere nel PATH prima di usare fw-build-validator.
 
@@ -149,6 +164,133 @@ fw-build-validator usa questa soglia: > 95% = warning, > 100% = fail bloccante.
 - `fw-engineer-arduino` — scrive/modifica gli sketch .ino
 - `fw-build-validator` — compila con arduino-cli e valida dimensione binario
 
+### Rilevamento versione firmware nell'app
+
+Dopo la connessione BLE, `BLEManager._fetchFirmwareVersion()` invia `CONFIG:GET_VERSION` e legge la risposta con READ su `configCharacteristic`. Il valore (es. `"3.1.1"`) viene salvato in `BLEManager.connectedFirmwareVersion`.
+
+`HomeScreen` poi chiama `UpdateChecker.fetchFirmwareLatest()` (legge `releases.json` da GitHub) e confronta le versioni con `UpdateChecker.isNewer()`. Se l'update è disponibile:
+- Il pulsante UPDATE FIRMWARE diventa arancione con badge "UPDATE"
+- La versione FW installata appare nel connection box in arancio
+
+`OtaScreen` mostra "Installato: vX.Y.Z" e "Aggiornamento disponibile: vX.Y.Z"; disabilita il pulsante SCARICA E INSTALLA se il firmware è già aggiornato.
+
+**Cosa aggiornare a ogni nuova release firmware:**
+1. `releases.json` → bump `firmwareLatest` (es. `"v3.2.0"`)
+2. Creare GitHub release su `kat1-firmware` con i `.bin` corretti
+
 ### TODO — Verifica flash board produzione
 Al primo build reale, verificare se la board è N8 (8MB flash) invece di N4 (4MB).
 Se confermato N8: valutare passaggio a `FlashSize=8M` con partition `min_spiffs` per raddoppiare lo spazio disponibile per l'app.
+
+---
+
+## ⚠️ Vincoli firmware — LEGGERE PRIMA DI MODIFICARE GLI SKETCH
+
+Questa sezione documenta vincoli critici scoperti durante lo sviluppo. Ignorarli causa regressioni difficili da diagnosticare.
+
+### Versioni toolchain — NON aggiornare senza verifica
+
+| Componente | Versione validata | Note |
+|---|---|---|
+| Arduino ESP32 core | **2.0.17** | Core 3.x è incompatibile con NimBLE-Arduino v1.4.x — BLE smette di funzionare senza crash visibili |
+| NimBLE-Arduino | **1.4.x** | v1.4 usa `esp_nimble_hci_and_controller_init()` rimossa in ESP-IDF 5.x (core 3.x) |
+
+**NimBLE-Arduino v1.4.x + Arduino ESP32 core 3.x = BLE non avvia l'advertising senza errori visibili.** La diagnosi richiede ore. Non aggiornare il core senza aggiornare anche NimBLE a v2.x (ma v2.x ha API breaking changes).
+
+### Hardware dev vs prod — differenze LED
+
+| Board | LED tipo | `setColor()` |
+|---|---|---|
+| Dev — Xiao ESP32-S3 (`DISCOVERY_03_XIAO`) | Common **cathode** | `ledcWrite(ch, r/g/b)` diretto — nessuna inversione |
+| Prod — ESP32-S3-WROOM (`DISCOVERY_03`) | Common **anode** | `ledcWrite(ch, 255-r/g/b)` — valori invertiti |
+
+Non copiare `setColor()` da uno sketch all'altro senza adattare la polarità.
+
+### API LEDC — core 2.x vs core 3.x
+
+Il core 2.x usa un'API LEDC diversa dal core 3.x. Usare **sempre** la forma core 2.x:
+
+```cpp
+// ✅ CORRETTO — core 2.x
+#define LEDC_CH_RED   0
+#define LEDC_CH_GREEN 1
+#define LEDC_CH_BLUE  2
+
+// In setup():
+ledcSetup(LEDC_CH_RED, 5000, 8);
+ledcAttachPin(LED_RED, LEDC_CH_RED);
+
+// In setColor():
+ledcWrite(LEDC_CH_RED, r);   // primo argomento = CANALE, non pin
+```
+
+```cpp
+// ❌ SBAGLIATO — core 3.x only, non compila su 2.x
+ledcAttach(LED_RED, 5000, 8);
+ledcWrite(LED_RED, r);        // LED_RED è un pin, non un canale
+```
+
+### Regole BLE — callback e GATT table
+
+**Regola 1 — Mai `delay()` nei callback BLE.**
+I callback `onWrite()` di NimBLE girano nel task BLE interno. Qualsiasi `delay()` blocca il task, causa timeout e crash del BLE stack. Per feedback visivi post-comando, usare un flag globale gestito nel `loop()`.
+
+```cpp
+// ❌ SBAGLIATO — dentro onWrite():
+saveMapColor(mapN - 1, r, g, b);
+setColor(r, g, b);
+delay(1000);   // KILL: blocca il task BLE
+
+// ✅ CORRETTO — dentro onWrite():
+saveMapColor(mapN - 1, r, g, b);
+previewColor[0] = r; previewColor[1] = g; previewColor[2] = b;
+showColorPreview = true;
+colorPreviewTime = millis();
+// Il loop() gestisce il LED dopo
+```
+
+**Regola 2 — Limite GATT table ~60 attributi.**
+NimBLEHIDDevice con 7 input report + Device Info + Battery Service + configService occupa già ~58-61 attributi. Aggiungere `NIMBLE_PROPERTY::NOTIFY` a `configCharacteristic` crea un CCCD extra e sfora il limite: il BLE non avvia l'advertising senza crash né errori.
+
+```cpp
+// ❌ SBAGLIATO — sfora il limite GATT
+configCharacteristic = configService->createCharacteristic(
+    uuid, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+
+// ✅ CORRETTO — usa READ per le risposte, l'app fa polling
+configCharacteristic = configService->createCharacteristic(
+    uuid, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::READ);
+```
+
+Per rispondere a query dell'app (es. `CONFIG:GET_COLORS`): `configCharacteristic->setValue(...)` senza `notify()`. L'app legge il valore con una READ esplicita.
+
+**Regola 3 — Ordine inizializzazione in `setup()`.**
+Su Xiao ESP32-S3, USB deve essere inizializzato **prima** di BLE. Se `NimBLEDevice::init()` viene chiamato prima di `USB.begin()`, crasha (panic) al boot.
+
+```cpp
+// ✅ ORDINE CORRETTO in setup():
+USB.begin();
+usbKeyboard.begin();
+delay(100);
+// ... EEPROM, load assignments ...
+setupBLE();
+loadMapColors();   // Preferences/NVS dopo BLE: NVS già inizializzato da NimBLE
+```
+
+**Regola 4 — `Preferences` (NVS) sempre dopo `setupBLE()`.**
+`Preferences::begin()` chiama `nvs_flash_init()` internamente. Se chiamata prima di `NimBLEDevice::init()`, può causare conflitti di inizializzazione NVS. Tutte le chiamate a `loadMapColors()` / `saveMapColor()` vanno dopo `setupBLE()`.
+
+### Protocollo comandi BLE firmware
+
+| Comando app → device | Comportamento device |
+|---|---|
+| `CONFIG:MODE:ON` | Entra in config mode (LED rosso fisso) |
+| `CONFIG:MODE:OFF` | Esce da config mode |
+| `CONFIG:MAP_COLOR:N:R:G:B` | Imposta colore mappa N (1-3), salva in NVS |
+| `CONFIG:GET_COLORS` | Scrive `R,G,B;R,G,B;R,G,B` su configCharacteristic → app legge con READ |
+| `CONFIG:GET_VERSION` | Scrive la versione firmware (es. `3.1.1`) su configCharacteristic → app legge con READ. Chiamato da BLEManager subito dopo CONFIG:MODE:ON; risultato in `connectedFirmwareVersion` |
+| `CONFIG:WHEEL:N:0/1` | Abilita/disabilita wheel encoder mappa N |
+| `CONFIG:M:K:HH:R` | Assegna comando HH a tasto K mappa M, flag repeat R |
+| `RESET:CONFIG` | Reset EEPROM + NVS colori → default |
+| `CONFIG:OTA:BEGIN:<size>` | Avvia sessione OTA BLE |
+| `CONFIG:OTA:END` | Finalizza OTA e riavvia |
