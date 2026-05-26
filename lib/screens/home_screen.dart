@@ -22,13 +22,14 @@ class _HomeScreenState extends State<HomeScreen> {
   BluetoothDevice? connectedDevice;
   bool isConnecting = false;
   String _appVersion = '';
+  String? _firmwareLatest;
+  bool _firmwareUpdateAvailable = false;
 
   @override
   void initState() {
     super.initState();
     bleManager = BLEManager();
-    bleManager.addListener(
-        () => setState(() => connectedDevice = bleManager.connectedDevice));
+    bleManager.addListener(_onBleChanged);
     _loadAppVersion();
     _checkForUpdates();
     _requestBlePermissions();
@@ -65,6 +66,34 @@ class _HomeScreenState extends State<HomeScreen> {
       Permission.bluetoothConnect,
       Permission.location,
     ].request();
+  }
+
+  /// Called whenever [BLEManager] notifies listeners.
+  ///
+  /// Triggers a firmware update check on first connection.
+  void _onBleChanged() {
+    setState(() => connectedDevice = bleManager.connectedDevice);
+    if (bleManager.isConnected && _firmwareLatest == null) {
+      _checkFirmwareUpdate();
+    } else if (!bleManager.isConnected) {
+      setState(() {
+        _firmwareUpdateAvailable = false;
+        _firmwareLatest = null;
+      });
+    }
+  }
+
+  /// Fetches [firmwareLatest] from releases.json and compares it with the
+  /// version reported by the connected device.
+  Future<void> _checkFirmwareUpdate() async {
+    final latest = await UpdateChecker.fetchFirmwareLatest();
+    if (latest == null || !mounted) return;
+    setState(() => _firmwareLatest = latest);
+    final deviceVersion = bleManager.connectedFirmwareVersion;
+    if (deviceVersion == null) return;
+    final latestClean = latest.startsWith('v') ? latest.substring(1) : latest;
+    setState(() => _firmwareUpdateAvailable =
+        UpdateChecker.isNewer(latestClean, deviceVersion));
   }
 
   Future<void> _toggleConnection() async {
@@ -201,6 +230,19 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 4),
                             Text(connectedDevice?.localName ?? 'No device',
                                 style: Theme.of(context).textTheme.bodyMedium),
+                            if (connected &&
+                                bleManager.connectedFirmwareVersion != null)
+                              Text(
+                                'FW ${bleManager.connectedFirmwareVersion}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: _firmwareUpdateAvailable
+                                          ? Colors.orange
+                                          : AppColors.connected,
+                                    ),
+                              ),
                           ],
                         ),
                       ],
@@ -257,17 +299,41 @@ class _HomeScreenState extends State<HomeScreen> {
                               AutoConfigScreen(bleManager: bleManager)))),
 
               const SizedBox(height: 10),
-              _actionButton(
-                  enabled: connected,
-                  color: const Color(0xFF1A237E),
-                  icon: Icons.system_update,
-                  label: 'UPDATE FIRMWARE',
-                  onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => OtaScreen(
-                              bleManager: bleManager,
-                              deviceType: bleManager.deviceType!)))),
+              Stack(
+                children: [
+                  _actionButton(
+                      enabled: connected,
+                      color: connected && _firmwareUpdateAvailable
+                          ? Colors.orange.shade800
+                          : const Color(0xFF1A237E),
+                      icon: Icons.system_update,
+                      label: 'UPDATE FIRMWARE',
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => OtaScreen(
+                                  bleManager: bleManager,
+                                  deviceType: bleManager.deviceType!)))),
+                  if (connected && _firmwareUpdateAvailable)
+                    Positioned(
+                      right: 12,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.orange,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text('UPDATE',
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                ],
+              ),
 
               const SizedBox(height: 24),
               Container(

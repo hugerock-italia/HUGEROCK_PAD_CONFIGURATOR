@@ -1,7 +1,7 @@
 {
-  "version": "3.0.2",
-  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.0.2/app-release.apk",
-  "releaseNotes": "Home screen now shows 3 configurable keymap labels for quick identification of app profiles (DMD2, Whip Live, custom). App version is now displayed in the home screen. Fixed Default button to properly reset map colors to default values.",
-  "date": "2026-05-21",
+  "version": "3.1.0",
+  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.1.0/app-release.apk",
+  "releaseNotes": "Firmware version is now detected automatically when the pad connects. If a firmware update is available, the app highlights the UPDATE FIRMWARE button and shows the installed vs available version in the OTA screen. Firmware v3.1.0 available via OTA.",
+  "date": "2026-05-26",
   "firmwareLatest": "v3.1.0"
 }

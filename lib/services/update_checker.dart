@@ -17,11 +17,15 @@ class UpdateInfo {
   /// Release date string (e.g. "2026-05-10").
   final String date;
 
+  /// Latest firmware version tag from releases.json (e.g. "v3.1.0").
+  final String firmwareLatest;
+
   const UpdateInfo({
     required this.version,
     required this.apkUrl,
     required this.releaseNotes,
     required this.date,
+    this.firmwareLatest = '',
   });
 
   factory UpdateInfo.fromJson(Map<String, dynamic> json) {
@@ -30,6 +34,7 @@ class UpdateInfo {
       apkUrl: json['apkUrl'] as String,
       releaseNotes: json['releaseNotes'] as String,
       date: json['date'] as String,
+      firmwareLatest: json['firmwareLatest'] as String? ?? '',
     );
   }
 }
@@ -42,7 +47,8 @@ class UpdateChecker {
   /// Compares two semver strings (MAJOR.MINOR.PATCH).
   ///
   /// Returns true if [remote] is strictly greater than [current].
-  static bool _isNewer(String remote, String current) {
+  /// Both strings must not have a leading "v" prefix.
+  static bool isNewer(String remote, String current) {
     try {
       final r = remote.split('.').map(int.parse).toList();
       final c = current.split('.').map(int.parse).toList();
@@ -83,12 +89,29 @@ class UpdateChecker {
           jsonDecode(response.body) as Map<String, dynamic>;
       final info = UpdateInfo.fromJson(json);
 
-      if (_isNewer(info.version, currentVersion)) {
+      if (isNewer(info.version, currentVersion)) {
         return info;
       }
       return null;
     } catch (e) {
       debugPrint('UpdateChecker: check failed – $e');
+      return null;
+    }
+  }
+
+  /// Fetches releases.json and returns the [firmwareLatest] tag string,
+  /// or null on any error.
+  static Future<String?> fetchFirmwareLatest() async {
+    try {
+      final response = await http
+          .get(Uri.parse(_releasesUrl))
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode != 200) return null;
+      final Map<String, dynamic> json =
+          jsonDecode(response.body) as Map<String, dynamic>;
+      return json['firmwareLatest'] as String?;
+    } catch (e) {
+      debugPrint('UpdateChecker: fetchFirmwareLatest failed – $e');
       return null;
     }
   }

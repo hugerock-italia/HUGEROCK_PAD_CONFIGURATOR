@@ -14,6 +14,7 @@ class BLEManager extends ChangeNotifier {
   DeviceType? _deviceType;
   bool _isScanning = false;
   int _mtu = 512;
+  String? _connectedFirmwareVersion;
 
   BluetoothDevice? get connectedDevice => _connectedDevice;
   DeviceType? get deviceType => _deviceType;
@@ -21,6 +22,10 @@ class BLEManager extends ChangeNotifier {
   bool get isScanning => _isScanning;
   int get mtu => _mtu;
   int get otaChunkSize => (_mtu - 3).clamp(20, 512);
+
+  /// Firmware version string read from the connected device (e.g. "3.1.0"),
+  /// or null if not yet fetched or no device connected.
+  String? get connectedFirmwareVersion => _connectedFirmwareVersion;
 
   BLEManager() {
     FlutterBluePlus.adapterState.listen((state) {
@@ -147,6 +152,7 @@ class BLEManager extends ChangeNotifier {
       await Future.delayed(const Duration(milliseconds: 200));
       await sendConfigModeOn();
       debugPrint('[BLE] CONFIG:MODE:ON sent');
+      await _fetchFirmwareVersion();
 
       _isScanning = false;
       notifyListeners();
@@ -170,6 +176,7 @@ class BLEManager extends ChangeNotifier {
       _configCharacteristic = null;
       _otaCharacteristic = null;
       _deviceType = null;
+      _connectedFirmwareVersion = null;
       _isScanning = false;
       notifyListeners();
       rethrow;
@@ -188,6 +195,27 @@ class BLEManager extends ChangeNotifier {
     if (_configCharacteristic == null) throw Exception('Not connected');
     await _configCharacteristic!
         .write('CONFIG:MODE:ON'.codeUnits, withoutResponse: false);
+  }
+
+  /// Requests firmware version from device via CONFIG:GET_VERSION command.
+  ///
+  /// Writes the command then reads the response from [_configCharacteristic].
+  /// Stores the result in [_connectedFirmwareVersion].
+  Future<void> _fetchFirmwareVersion() async {
+    if (_configCharacteristic == null) return;
+    try {
+      await _configCharacteristic!
+          .write('CONFIG:GET_VERSION'.codeUnits, withoutResponse: false);
+      await Future.delayed(const Duration(milliseconds: 300));
+      final value = await _configCharacteristic!.read();
+      if (value.isNotEmpty) {
+        _connectedFirmwareVersion = String.fromCharCodes(value).trim();
+        debugPrint('[BLE] Firmware version: $_connectedFirmwareVersion');
+      }
+    } catch (e) {
+      debugPrint('[BLE] getFirmwareVersion error: $e');
+      _connectedFirmwareVersion = null;
+    }
   }
 
   Future<void> sendConfigModeOff() async {
@@ -308,6 +336,7 @@ class BLEManager extends ChangeNotifier {
     _configCharacteristic = null;
     _otaCharacteristic = null;
     _deviceType = null;
+    _connectedFirmwareVersion = null;
     _mtu = 512;
     notifyListeners();
   }
