@@ -196,6 +196,47 @@ const locusMapProfile = AppProfile(
   ],
 );
 
+const emmaProfile = AppProfile(
+  id: 'emma',
+  name: 'EMMA',
+  category: 'GPS',
+  description: 'Zoom +/-, C/O, M/P, arrows',
+  icon: Icons.sports_motorsports,
+  recommendedMapId: 2,
+  assignments: [
+    0x38,
+    0x38,
+    0x39,
+    0x39,
+    0x06,
+    0x12,
+    0x10,
+    0x13,
+    0x52,
+    0x51,
+    0x50,
+    0x4F,
+    0x06,
+    0x05
+  ],
+  repeatFlags: [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false
+  ],
+);
+
 // ==================== ROADBOOK ====================
 
 const terraPirataProfile = AppProfile(
@@ -371,6 +412,7 @@ const List<AppProfile> allProfiles = [
   whipProfile,
   dmd2Profile,
   locusMapProfile,
+  emmaProfile,
   terraPirataProfile,
   mrbProfile,
   roadbookReaderProfile,
