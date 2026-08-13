@@ -1,7 +1,7 @@
 {
-  "version": "3.1.0",
-  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.1.0/app-release.apk",
-  "releaseNotes": "Firmware version is now detected automatically when the pad connects. If a firmware update is available, the app highlights the UPDATE FIRMWARE button and shows the installed vs available version in the OTA screen. Firmware v3.1.0 available via OTA.",
-  "date": "2026-05-26",
+  "version": "3.2.0",
+  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.2.0/app-release.apk",
+  "releaseNotes": "Added the EMMA GPS profile for Map3 auto-config: map zoom, C/O/M/P shortcuts and arrow keys, with the motocross helmet icon in the GPS tab.",
+  "date": "2026-08-13",
   "firmwareLatest": "v3.1.0"
 }
