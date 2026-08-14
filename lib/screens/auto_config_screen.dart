@@ -61,7 +61,7 @@ class _AutoConfigScreenState extends State<AutoConfigScreen>
           _selectedProfile!.assignments[keyIndex],
           repeat: _selectedProfile!.repeatFlags[keyIndex],
         );
-        await Future.delayed(const Duration(milliseconds: 30));
+        await Future.delayed(const Duration(milliseconds: 100));
       }
 
       // Salva su SharedPreferences per aggiornare config_screen
