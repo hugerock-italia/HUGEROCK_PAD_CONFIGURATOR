@@ -209,8 +209,21 @@ class BLEManager extends ChangeNotifier {
       await Future.delayed(const Duration(milliseconds: 300));
       final value = await _configCharacteristic!.read();
       if (value.isNotEmpty) {
-        _connectedFirmwareVersion = String.fromCharCodes(value).trim();
-        debugPrint('[BLE] Firmware version: $_connectedFirmwareVersion');
+        final raw = String.fromCharCodes(value).trim();
+        debugPrint('[BLE] Firmware version raw response: $value ("$raw")');
+        // The config characteristic is shared by many commands; sanitize the
+        // response and extract only a clean version pattern (e.g. 3.2.0).
+        // Never trust .trim() alone: stray/non-printable bytes left over
+        // from another command must not silently produce a garbage version
+        // string that later fails to parse and gets treated as "up to date".
+        final match = RegExp(r'\d+(\.\d+){1,2}').firstMatch(raw);
+        _connectedFirmwareVersion = match?.group(0);
+        if (_connectedFirmwareVersion == null) {
+          debugPrint(
+              '[BLE] Firmware version response did not match expected pattern: "$raw"');
+        } else {
+          debugPrint('[BLE] Firmware version: $_connectedFirmwareVersion');
+        }
       }
     } catch (e) {
       debugPrint('[BLE] getFirmwareVersion error: $e');
