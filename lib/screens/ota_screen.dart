@@ -73,9 +73,14 @@ class _OtaScreenState extends State<OtaScreen> {
       final deviceVersion = widget.bleManager.connectedFirmwareVersion;
       final latestClean =
           version.startsWith('v') ? version.substring(1) : version;
+      // deviceVersion is either a clean "x.y.z"-style string (sanitized in
+      // BLEManager._fetchFirmwareVersion) or null when the device response
+      // could not be parsed. Treat null as "needs update" so a parsing
+      // failure never silently shows "up to date" to the user.
+      debugPrint(
+          '[OTA] Comparing versions - device: $deviceVersion, latest: $latestClean');
       final needsUpdate = deviceVersion == null ||
           UpdateChecker.isNewer(latestClean, deviceVersion);
-
       setState(() {
         _latestVersion = version;
         _assetUrl = foundUrl;
