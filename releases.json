@@ -3,5 +3,5 @@
   "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.2.1/app-release.apk",
   "releaseNotes": "EMMA profile: zoom in/out now sends keys '1'/'2' instead of '+'/'-'. Increased delay between BLE config writes during auto-config apply to improve reliability.",
   "date": "2026-08-14",
-  "firmwareLatest": "v3.1.0"
+  "firmwareLatest": "v3.2.0"
 }
