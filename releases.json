@@ -1,7 +1,7 @@
 {
-  "version": "3.2.1",
-  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.2.1/app-release.apk",
-  "releaseNotes": "EMMA profile: zoom in/out now sends keys '1'/'2' instead of '+'/'-'. Increased delay between BLE config writes during auto-config apply to improve reliability.",
-  "date": "2026-08-14",
+  "version": "3.2.2",
+  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.2.2/app-release.apk",
+  "releaseNotes": "Fixed a bug where the app showed 'Firmware up to date' and kept the OTA update button disabled even when a newer firmware version was available, due to incorrect parsing of the firmware version read via BLE.",
+  "date": "2026-08-23",
   "firmwareLatest": "v3.2.0"
 }
