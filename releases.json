@@ -1,7 +1,7 @@
 {
-  "version": "3.2.2",
-  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.2.2/app-release.apk",
-  "releaseNotes": "Fixed a bug where the app showed 'Firmware up to date' and kept the OTA update button disabled even when a newer firmware version was available, due to incorrect parsing of the firmware version read via BLE.",
+  "version": "3.2.3",
+  "apkUrl": "https://github.com/hugerock-italia/HUGEROCK_PAD_CONFIGURATOR/releases/download/v3.2.3/app-release.apk",
+  "releaseNotes": "Added a local .bin sideload button (debug/test) in the OTA screen, allowing a firmware binary to be sent over BLE directly from the device storage without publishing a GitHub release, to speed up firmware testing.",
   "date": "2026-08-23",
   "firmwareLatest": "v3.2.0"
 }
