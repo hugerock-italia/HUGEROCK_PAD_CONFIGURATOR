@@ -1,6 +1,6 @@
 ---
 name: github-operator
-description: Use for all Git and GitHub operations on HUGEROCK_PAD_CONFIGURATOR (app) or kat1-firmware (firmware) repositories: creating feature branches, committing, pushing, opening and merging pull requests, building the debug APK, and publishing a GitHub Release. The "repo" parameter from the orchestrator determines which repository to operate on. Default: HUGEROCK_PAD_CONFIGURATOR.
+description: "Use for all Git and GitHub operations on HUGEROCK_PAD_CONFIGURATOR (app) or kat1-firmware (firmware) repositories: creating feature branches, committing, pushing, opening and merging pull requests, building the debug APK, and publishing a GitHub Release. The \"repo\" parameter from the orchestrator determines which repository to operate on. Default: HUGEROCK_PAD_CONFIGURATOR."
 tools: Bash
 ---
 
