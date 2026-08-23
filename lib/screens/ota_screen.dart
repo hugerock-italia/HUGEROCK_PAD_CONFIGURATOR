@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../services/ble_manager.dart';
@@ -169,6 +171,84 @@ class _OtaScreenState extends State<OtaScreen> {
     }
   }
 
+  /// Debug-only sideload path: lets the tester pick a local .bin file and
+  /// pushes it to the device via the exact same BLE OTA mechanism used for
+  /// GitHub releases (subscribe -> startOta -> chunked send -> endOta ->
+  /// unsubscribe), but skipping the GitHub version check entirely.
+  Future<void> _startLocalSideload() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['bin'],
+    );
+    if (result == null || result.files.single.path == null) return;
+
+    final path = result.files.single.path!;
+
+    setState(() {
+      _updating = true;
+      _progress = 0;
+      _sentBytes = 0;
+      _status = 'Reading local firmware file...';
+    });
+
+    try {
+      final Uint8List firmware = await File(path).readAsBytes();
+      _totalBytes = firmware.length;
+
+      setState(() =>
+          _status = 'Starting OTA on ${widget.deviceType.displayName}...');
+      final hasNotify = await widget.bleManager.subscribeOtaNotifications();
+
+      bool otaError = false;
+      if (hasNotify) {
+        widget.bleManager.otaNotifications?.listen((value) {
+          if (String.fromCharCodes(value).startsWith('ERR')) otaError = true;
+        });
+      }
+
+      await widget.bleManager.startOta(_totalBytes);
+      setState(() => _status =
+          'Sending firmware... (chunk: \${widget.bleManager.otaChunkSize}B)');
+
+      final chunkSize = widget.bleManager.otaChunkSize;
+      int offset = 0;
+      while (offset < firmware.length) {
+        if (otaError) throw Exception('OTA error reported by device');
+        final end = (offset + chunkSize < firmware.length)
+            ? offset + chunkSize
+            : firmware.length;
+        await widget.bleManager.sendOtaChunk(firmware.sublist(offset, end));
+        offset = end;
+        _sentBytes = offset;
+        setState(() => _progress = _sentBytes / _totalBytes);
+        await Future.delayed(const Duration(milliseconds: _chunkDelay));
+      }
+
+      setState(() => _status = 'Finalizing...');
+      try {
+        await widget.bleManager.endOta();
+      } catch (_) {}
+      await widget.bleManager.unsubscribeOtaNotifications();
+
+      setState(() {
+        _status = '✓ Sideload complete! Device is restarting.';
+        _updating = false;
+        _progress = 1.0;
+      });
+      await Future.delayed(const Duration(seconds: 4));
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      try {
+        await widget.bleManager.unsubscribeOtaNotifications();
+      } catch (_) {}
+      setState(() {
+        _status = 'Error: $e';
+        _updating = false;
+        _progress = 0;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -282,6 +362,24 @@ class _OtaScreenState extends State<OtaScreen> {
                         side: const BorderSide(color: Colors.white30)),
                     child: const Text('CHECK FOR UPDATES'),
                   ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: OutlinedButton(
+                    onPressed: _updating ? null : _startLocalSideload,
+                    style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.orangeAccent,
+                        side: const BorderSide(color: Colors.orangeAccent)),
+                    child: const Text('SIDELOAD LOCALE (TEST)'),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Solo per test - salta il controllo versione',
+                  style: TextStyle(color: Colors.white38, fontSize: 11),
+                  textAlign: TextAlign.center,
                 ),
               ] else ...[
                 SizedBox(
