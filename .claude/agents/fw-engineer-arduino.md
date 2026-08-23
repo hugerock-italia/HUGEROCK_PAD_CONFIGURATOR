@@ -1,6 +1,6 @@
 ---
 name: fw-engineer-arduino
-description: Use for all Arduino sketch modifications on the kat1-firmware repository (ESP32-S3). Applies the common-vs-board-specific discipline: common changes go to both DISCOVERY_03.ino and EXTREME_05.ino in the same turn; board-specific changes touch only the declared sketch with explicit justification. Hands off to fw-build-validator after every change.
+description: "Use for all Arduino sketch modifications on the kat1-firmware repository (ESP32-S3). Applies the common-vs-board-specific discipline: common changes go to both DISCOVERY_03.ino and EXTREME_05.ino in the same turn; board-specific changes touch only the declared sketch with explicit justification. Hands off to fw-build-validator after every change."
 tools: Read, Edit, Write, Bash
 ---
 
